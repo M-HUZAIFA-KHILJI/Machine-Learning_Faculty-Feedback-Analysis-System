@@ -106,9 +106,6 @@ python manage.py runserver 127.0.0.1:8000
 - Add automated end-to-end tests and visual regression tests for the frontend.
 - Add pagination and search for large feedback collections.
 
-## License
-
-This repository does not include a license file by default. If you want to open-source it, add a `LICENSE` (MIT / Apache 2.0 / etc.) to clarify reuse terms.
 
 ---
 
