@@ -112,4 +112,4 @@ This repository does not include a license file by default. If you want to open-
 
 ---
 
-If you'd like changes (shorter/longer README, more technical detail, or a README tailored for a specific audience), tell me how you'd like it adjusted and I will update `README.md`.
+ `README.md`.
