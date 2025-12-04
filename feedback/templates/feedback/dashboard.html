@@ -1,0 +1,295 @@
+{% extends 'feedback/base.html' %}
+{% load static %}
+
+{% block title %}Feedback Analytics{% endblock %}
+
+{% block content %}
+    <div class="dashboard-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-6 mb-1">📊 Feedback Analytics</h1>
+                <p class="lead mb-0 small text-muted">A clean, compact overview of sentiment data.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4 stats-grid">
+        <div class="col-6 col-md-3">
+            <div class="card p-3 text-center stat-card h-100">
+                <div class="small text-muted">Total Professors</div>
+                <div class="h3 fw-bold stat-number text-primary">{{ total_professors }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card p-3 text-center stat-card h-100">
+                <div class="small text-muted">Total Reviews</div>
+                <div class="h3 fw-bold stat-number text-info">{{ total_comments }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card p-3 text-center stat-card h-100">
+                <div class="small text-muted">Positive Reviews</div>
+                <div class="h3 fw-bold stat-number text-success">{{ sentiment_stats.positive }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card p-3 text-center stat-card h-100">
+                <div class="small text-muted">Overall Positivity</div>
+                <div class="h3 fw-bold stat-number text-success">
+                    {% if total_comments > 0 %}
+                        {% widthratio sentiment_stats.positive total_comments 100 %}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="h4 mb-3">🎯 Core Sentiment Analytics</h2>
+
+        <ul class="nav nav-tabs mb-3" id="sentimentTabs" role="tablist">
+            <li class="nav-item" role="presentation"><button class="nav-link active" id="distribution-tab" data-bs-toggle="tab" data-bs-target="#distribution" type="button">📊 Distribution</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button">🏆 Performance</button></li>
+            <li class="nav-item" role="presentation"><button class="nav-link" id="trends-tab" data-bs-toggle="tab" data-bs-target="#trends" type="button">📈 Trends</button></li>
+        </ul>
+
+        <div class="tab-content" id="sentimentTabsContent">
+            <div class="tab-pane fade show active" id="distribution">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card p-3 h-100">
+                            <div class="card-title mb-2">Overall Sentiment Distribution</div>
+                            <canvas id="sentimentPieChart" class="chart-canvas w-100" style="height:180px;"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card p-3 h-100">
+                            <div class="card-title mb-2">Sentiment Score Distribution</div>
+                            <canvas id="histogramChart" class="chart-canvas w-100" style="height:180px;"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-12 col-lg-4">
+                        <div class="card p-3 h-100">
+                            <div class="card-title mb-2">Sentiment Volume by Faculty</div>
+                            <canvas id="volumeStackedChart" class="chart-canvas w-100" style="height:180px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="performance">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="card p-3 h-100">
+                            <div class="card-title mb-2">Faculty Sentiment Score Heatmap</div>
+                            <canvas id="scoreHeatmapChart" class="chart-canvas w-100" style="height:260px;"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="card p-3 h-100">
+                            <div class="card-title mb-2">Faculty Performance Ranking</div>
+                            <div style="max-height: 285px; overflow-y: auto; padding-right: 5px;">
+                                {% for item in professors_with_stats %}
+                                    <div class="ranking-item mb-2 d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <strong>{{ forloop.counter }}. {{ item.professor.name }}</strong>
+                                            <div class="text-muted small">{{ item.professor.subject }}</div>
+                                        </div>
+                                        <div style="min-width:120px; text-align:right;">
+                                            <div class="small text-muted">Score: <strong>{{ item.avg_sentiment_score|floatformat:2 }}</strong></div>
+                                            <div class="score-bar mt-1"><div class="score-fill" style="width: {{ item.score_pct }}%; {% if item.avg_sentiment_score > 0.3 %}background:#28a745;{% elif item.avg_sentiment_score > -0.3 %}background:#ffc107;{% else %}background:#dc3545;{% endif %}"></div></div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="trends">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="card p-3 h-100">
+                            <div class="card-title mb-2">Comment Volume Trend (30 Days)</div>
+                            <canvas id="volumeTrendChart" class="chart-canvas w-100" style="height:200px;"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="card p-3 h-100">
+                            <div class="card-title mb-2">Sentiment Score Trend (30 Days)</div>
+                            <canvas id="scoreTrendChart" class="chart-canvas w-100" style="height:200px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="chart-section p-3" style="height: 385px;"><h2 class="h4 mb-3">☁️ Feedback Word Cloud</h2>
+                <div class="word-cloud-container"><canvas id="wordCloud" width="400" height="280"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="professor-rankings chart-section p-3" style="height: 385px;"><h2 class="h4 mb-3">🏆 Faculty Performance Ranking</h2>
+                <div style="max-height: 285px; overflow-y: auto; padding-right: 5px;">
+                    {% for item in professors_with_stats %}
+                        <div class="ranking-item">
+                            <div style="flex:1;"><strong class="h6 mb-0">{{ forloop.counter }}. {{ item.professor.name }}</strong><div class="text-muted small">{{ item.professor.subject }}</div>
+                                <div class="score-bar"><div class="score-fill" style="width: {{ item.score_pct }}%; {% if item.avg_sentiment_score > 0.3 %}background:#28a745;{% elif item.avg_sentiment_score > -0.3 %}background:#ffc107;{% else %}background:#dc3545;{% endif %}"></div></div>
+                                <div class="small text-muted">Score: <strong>{{ item.avg_sentiment_score|floatformat:2 }}</strong> • {{ item.stats.total }} reviews</div>
+                            </div>
+                            <div style="text-align:right; min-width:80px;"><div style="font-weight:bold; font-size:1em; color:#28a745;">{{ item.positive_ratio|floatformat:1 }}%</div><div class="small text-muted">Positivity</div></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
+
+    {{ sentiment_scores|json_script:"sentimentScores" }}
+
+    <script>
+        // Professional palette
+        const COLORS = {
+            primary: '#0d6efd',
+            positive: '#198754',
+            warning: '#f59f00',
+            negative: '#dc3545',
+            neutral: '#6c757d',
+            accent: '#6610f2'
+        };
+
+        // Sentiment summary
+        const sentiment_stats = {
+            positive: {{ sentiment_stats.positive|default:0 }},
+            neutral: {{ sentiment_stats.neutral|default:0 }},
+            negative: {{ sentiment_stats.negative|default:0 }}
+        };
+
+        // Professors data
+        const professors_with_stats = [
+            {% for item in professors_with_stats %}
+            {
+                name: "{{ item.professor.name|escapejs }}",
+                stats: { positive: {{ item.stats.positive }}, neutral: {{ item.stats.neutral }}, negative: {{ item.stats.negative }} },
+                avg_sentiment_score: {{ item.avg_sentiment_score|default:0 }},
+            },
+            {% endfor %}
+        ];
+
+        // Trend data (ordered)
+        const trend_data = [
+            {% for day in trend_data %}{ display_date: '{{ day.display_date }}', count: {{ day.count }}, avg_score: {{ day.avg_score|default:0 }} },{% endfor %}
+        ];
+
+        // Word frequency
+        const word_frequency = [
+            {% for w,c in word_frequency %}['{{ w|escapejs }}', {{ c }}],{% endfor %}
+        ];
+
+        // Parse sentiment scores (used for histogram)
+        const sentimentScores = JSON.parse(document.getElementById('sentimentScores').textContent || '[]');
+
+        // --- Pie: overall distribution ---
+        const pieCtx = document.getElementById('sentimentPieChart').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Positive','Neutral','Negative'],
+                datasets: [{
+                    data: [sentiment_stats.positive, sentiment_stats.neutral, sentiment_stats.negative],
+                    backgroundColor: [COLORS.positive, COLORS.neutral, COLORS.negative],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'right' } } }
+        });
+
+        // --- Stacked bar: volume by faculty ---
+        function getChartLabels(data){ return data.map(d => d.name.length > 18 ? d.name.slice(0,18) + '...' : d.name); }
+        const volumeCtx = document.getElementById('volumeStackedChart').getContext('2d');
+        new Chart(volumeCtx, {
+            type: 'bar',
+            data: {
+                labels: getChartLabels(professors_with_stats),
+                datasets: [
+                    { label: 'Positive', data: professors_with_stats.map(i => i.stats.positive), backgroundColor: COLORS.positive, stack: 'Stack 0' },
+                    { label: 'Neutral', data: professors_with_stats.map(i => i.stats.neutral), backgroundColor: COLORS.neutral, stack: 'Stack 0' },
+                    { label: 'Negative', data: professors_with_stats.map(i => i.stats.negative), backgroundColor: COLORS.negative, stack: 'Stack 0' }
+                ]
+            },
+            options: { responsive: true, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
+        });
+
+        // --- Histogram: sentiment score distribution ---
+        (function() {
+            const bins = 10;
+            if (sentimentScores.length === 0) return;
+            const min = -1, max = 1;
+            const binSize = (max - min) / bins;
+            const counts = new Array(bins).fill(0);
+            sentimentScores.forEach(s => {
+                const val = parseFloat(s) || 0;
+                let idx = Math.floor((val - min) / binSize);
+                if (idx < 0) idx = 0;
+                if (idx >= bins) idx = bins - 1;
+                counts[idx] += 1;
+            });
+            const labels = counts.map((_, i) => (min + i * binSize).toFixed(2) + ' → ' + (min + (i+1) * binSize).toFixed(2));
+
+            const histCanvas = document.getElementById('histogramChart');
+            if (histCanvas) {
+                new Chart(histCanvas.getContext('2d'), {
+                    type: 'bar',
+                    data: { labels: labels, datasets: [{ label: 'Sentiment Score Distribution', data: counts, backgroundColor: COLORS.accent }] },
+                    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
+        })();
+
+        // --- Heatmap-like horizontal bar: avg sentiment per professor ---
+        (function(){
+            const heatCanvas = document.getElementById('scoreHeatmapChart');
+            if (!heatCanvas || professors_with_stats.length === 0) return;
+
+            const labels = professors_with_stats.map(p => p.name.length > 24 ? p.name.slice(0,24) + '…' : p.name);
+            const data = professors_with_stats.map(p => Number(p.avg_sentiment_score) || 0);
+            const bg = data.map(v => v > 0.3 ? COLORS.positive : (v > -0.3 ? COLORS.warning : COLORS.negative));
+
+            new Chart(heatCanvas.getContext('2d'), {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Avg Score', data: data, backgroundColor: bg }] },
+                options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { suggestedMin: -1, suggestedMax: 1 } } }
+            });
+        })();
+
+        // --- Trends: line charts for counts and average score ---
+        (function(){
+            const labels = trend_data.map(d => d.display_date);
+            const counts = trend_data.map(d => d.count);
+            const avg_scores = trend_data.map(d => Number(d.avg_score) || 0);
+
+            const volCtx = document.getElementById('volumeTrendChart').getContext('2d');
+            new Chart(volCtx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Comments per day', data: counts, borderColor: COLORS.primary, backgroundColor: 'rgba(13,110,253,0.08)', fill: true, tension: 0.25 }] }, options: { responsive: true, scales: { y: { beginAtZero: true } } } });
+
+            const scoreCtx = document.getElementById('scoreTrendChart').getContext('2d');
+            new Chart(scoreCtx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Average sentiment', data: avg_scores, borderColor: COLORS.positive, backgroundColor: 'rgba(25,135,84,0.08)', fill: true, tension: 0.25 }] }, options: { responsive: true, scales: { y: { suggestedMin: -1, suggestedMax: 1 } } } });
+        })();
+
+        // Word cloud
+        if (word_frequency.length > 0) {
+            WordCloud(document.getElementById('wordCloud'), { list: word_frequency, gridSize: 12, weightFactor: s => Math.pow(s,1.2) * 6, fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif', color: () => [COLORS.primary, COLORS.positive, COLORS.negative, COLORS.warning, COLORS.accent][Math.floor(Math.random()*5)], rotateRatio: 0.25, backgroundColor: 'transparent' });
+        }
+    </script>
+{% endblock %}

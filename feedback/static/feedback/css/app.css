@@ -1,0 +1,41 @@
+:root{
+  --primary:#0d6efd;
+  --muted:#6c757d;
+  --bg:#f4f6f9;
+  --card:#ffffff;
+  --success:#198754;
+}
+html,body{height:100%;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:#1f2937}
+.container-main{padding:2.5rem 1rem; max-width:1100px; margin:0 auto}
+.jumbotron{background:linear-gradient(180deg, #e9f2ff, #ffffff); padding:2.5rem; border-radius:0.75rem; box-shadow:0 6px 18px rgba(15,23,42,0.06)}
+.card{border-radius:12px; background:var(--card); box-shadow:0 6px 18px rgba(15,23,42,0.04)}
+.card .card-header{border-radius:12px 12px 0 0}
+.avatar{flex:0 0 56px; width:56px; height:56px; border-radius:50%; font-weight:700}
+.avatar.bg-primary{background:var(--primary)}
+.text-muted small, .small{color:var(--muted)}
+.btn-primary{background:var(--primary); border-color:var(--primary)}
+.btn-outline-primary{color:var(--primary); border-color:rgba(13,110,253,0.15)}
+.btn-outline-primary:hover{background:rgba(13,110,253,0.06)}
+.score-bar{height:8px; background:#eef2f6; border-radius:6px; overflow:hidden}
+.score-fill{height:100%; border-radius:6px}
+.dashboard-header{padding:1rem 1.5rem; border-radius:10px; background:var(--card); box-shadow:0 6px 18px rgba(15,23,42,0.04)}
+/* Responsive tweaks */
+@media (max-width:767px){
+  .avatar{width:48px;height:48px;font-size:.95rem}
+  .container-main{padding:1rem}
+}
+
+/* Stats grid styling */
+.stats-grid .stat-card{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;background:var(--card);box-shadow:0 6px 18px rgba(15,23,42,0.04);padding:1rem}
+.stat-number{font-size:1.45rem}
+.stat-card .small{text-transform:uppercase;letter-spacing:0.03em}
+
+/* Chart canvas responsive tweaks */
+.chart-canvas{max-height:320px}
+@media (max-width:767px){
+  .chart-canvas{max-height:220px}
+}
+
+/* Ranking small tweaks */
+.ranking-item{padding:0.5rem 0.25rem;border-bottom:1px solid #f1f5f9}
+.ranking-item:last-child{border-bottom:none}

@@ -1,0 +1,116 @@
+{% extends 'feedback/base.html' %}
+{% block title %}Submit Feedback{% endblock %}
+{% block content %}
+    <style>
+        .feedback-card { max-width: 1100px; margin: 0 auto; }
+        .sentiment-result { padding: 12px; border-radius: 6px; margin: 8px 0; font-weight: 600 }
+        .positive { background: #d4edda; color: #155724 }
+        .negative { background: #f8d7da; color: #721c24 }
+        .neutral { background: #e2e3e5; color: #383d41 }
+        @media (min-width: 992px) {
+            .feedback-form-side { border-left: 1px solid #eef2f6 }
+        }
+    </style>
+
+    <div class="container container-main mt-4">
+        <div class="feedback-card card shadow">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">📝 Submit Faculty Feedback</h2>
+            </div>
+            <div class="card-body">
+                <!-- Success Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if preselected_professor %}
+                    <div class="alert alert-info">
+                        You're submitting feedback for <strong>{{ preselected_professor.name }}</strong> (<em>{{ preselected_professor.subject }}</em>).
+                        If you'd like to submit for someone else, choose from the dropdown below.
+                    </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-12 col-lg-8">
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <div class="mb-3">
+                                <label class="form-label">Faculty</label>
+                                {{ form.professor }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Your Name (Optional)</label>
+                                {{ form.student_name }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Your Feedback</label>
+                                {{ form.comment_text }}
+                                <div class="form-text">
+                                    Our AI will automatically analyze the sentiment of your feedback.
+                                </div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    📊 Analyze & Submit Feedback
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="mt-3 d-flex gap-2">
+                            <a href="/" class="btn btn-outline-secondary">← Back to Home</a>
+                            <a href="/dashboard/" class="btn btn-outline-info">📊 View Analytics</a>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-4 feedback-form-side">
+                        <div class="mb-3">
+                            <h6 class="mb-2">Quick Tips</h6>
+                            <ul class="small text-muted">
+                                <li>Be specific: mention lectures, grading, or examples.</li>
+                                <li>Keep feedback constructive and respectful.</li>
+                                <li>AI analyzes sentiment automatically — no need to tag.</li>
+                            </ul>
+                        </div>
+
+                        <div class="card mt-2">
+                            <div class="card-body">
+                                <h6>How AI Sentiment Works</h6>
+                                <div class="sentiment-result positive">Positive: "Explains concepts clearly"</div>
+                                <div class="sentiment-result negative">Negative: "Slides are confusing"</div>
+                                <div class="sentiment-result neutral">Neutral: "Average performance"</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works Section -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5>🤖 How AI Sentiment Analysis Works</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="sentiment-result positive">Positive: "Amazing teacher!"</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="sentiment-result negative">Negative: "Boring lectures"</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="sentiment-result neutral">Neutral: "It's okay"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% endblock %}
